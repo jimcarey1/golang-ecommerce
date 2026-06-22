@@ -19,6 +19,7 @@ type Address struct {
 	CreatedAt  pgtype.Timestamptz
 	UpdatedAt  pgtype.Timestamptz
 	UserID     int32
+	IsPrimary  bool
 }
 
 type User struct {

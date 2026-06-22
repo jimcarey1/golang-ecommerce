@@ -14,7 +14,7 @@ import (
 const createAddress = `-- name: CreateAddress :one
 INSERT INTO addresses (line1, line2, city, state_name, postal_code, country, user_id)
 VALUES ($1, $2, $3, $4, $5, $6, $7)
-RETURNING id, line1, line2, city, state_name, postal_code, country, created_at, updated_at, user_id
+RETURNING id, line1, line2, city, state_name, postal_code, country, created_at, updated_at, user_id, is_primary
 `
 
 type CreateAddressParams struct {
@@ -49,6 +49,7 @@ func (q *Queries) CreateAddress(ctx context.Context, arg CreateAddressParams) (A
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.UserID,
+		&i.IsPrimary,
 	)
 	return i, err
 }

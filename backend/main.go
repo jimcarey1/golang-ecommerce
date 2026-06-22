@@ -9,7 +9,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jimcarey1/ecommerce/internal/db"
 	"github.com/jimcarey1/ecommerce/internal/httpapi"
-	"github.com/jimcarey1/ecommerce/internal/users"
+	"github.com/jimcarey1/ecommerce/internal/services"
 )
 
 func main(){
@@ -24,9 +24,10 @@ func main(){
 
 	queries := db.New(conn)
 
-	userService := users.NewUserService(queries)
+	userService := services.NewUserService(queries)
+	addressService := services.NewAddressService(queries)
 
-	handler := httpapi.NewServer(userService)
+	handler := httpapi.NewServer(userService, addressService)
 
 	server := http.Server{
 		Addr: "localhost:8080",

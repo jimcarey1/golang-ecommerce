@@ -6,13 +6,13 @@ import (
 
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
-	"github.com/jimcarey1/ecommerce/internal/users"
+	"github.com/jimcarey1/ecommerce/internal/services"
 )
 
-func NewServer(userService *users.UserService) http.Handler {
+func NewServer(userService *services.UserService, addressService *services.AddressService) http.Handler {
 	mux := mux.NewRouter()
 
-	addRoutes(mux, userService)
+	addRoutes(mux, userService, addressService)
 	var handler http.Handler = mux
 	handler = handlers.LoggingHandler(os.Stdout, handler)
 	handler = handlers.CORS(

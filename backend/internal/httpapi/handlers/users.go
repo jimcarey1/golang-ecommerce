@@ -7,11 +7,11 @@ import (
 	"time"
 
 	"github.com/jimcarey1/ecommerce/internal/db"
-	"github.com/jimcarey1/ecommerce/internal/users"
+	"github.com/jimcarey1/ecommerce/internal/services"
 	"github.com/jimcarey1/ecommerce/internal/utils"
 )
 
-func HandleCreateUser(userService *users.UserService) http.Handler {
+func HandleCreateUser(userService *services.UserService) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 		var userPayload db.CreateUserParams
@@ -33,7 +33,7 @@ func HandleCreateUser(userService *users.UserService) http.Handler {
 	})
 }
 
-func HandleUserLogin(userService *users.UserService) http.Handler {
+func HandleUserLogin(userService *services.UserService) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
