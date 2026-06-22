@@ -10,5 +10,4 @@ CREATE TABLE users(
 );
 
 -- +goose Down
-SELECT 'down SQL query';
 IF EXISTS DROP TABLE users;

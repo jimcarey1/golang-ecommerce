@@ -8,6 +8,19 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type Address struct {
+	ID         int32
+	Line1      string
+	Line2      pgtype.Text
+	City       string
+	StateName  string
+	PostalCode string
+	Country    string
+	CreatedAt  pgtype.Timestamptz
+	UpdatedAt  pgtype.Timestamptz
+	UserID     int32
+}
+
 type User struct {
 	ID             int32
 	FullName       string

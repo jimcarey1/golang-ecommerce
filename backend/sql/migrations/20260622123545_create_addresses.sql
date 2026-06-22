@@ -1,0 +1,18 @@
+-- +goose Up
+CREATE TABLE addresses (
+    id SERIAL PRIMARY KEY,
+    line1 VARCHAR(255) NOT NULL,
+    line2 VARCHAR(255),
+    city VARCHAR(100) NOT NULL,
+    state_name VARCHAR(100) NOT NULL,
+    postal_code VARCHAR(20) NOT NULL,
+    country VARCHAR(100) NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    user_id INT NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- +goose Down
+IF EXISTS DROP TABLE addresses;
