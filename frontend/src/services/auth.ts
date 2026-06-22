@@ -1,12 +1,17 @@
-import api from "./api";
+import api from "./api.ts";
 
-export type CreateUserPayload = {
-  full_name: string;
+export interface RegisterPayload {
+  fullName: string;
   email: string;
   password: string;
-};
+}
 
-export type AuthUser = {
+export interface LoginPayload {
+  email: string;
+  password: string;
+}
+
+export interface AuthUser {
   ID: number;
   FullName: string;
   Email: string;
@@ -14,20 +19,52 @@ export type AuthUser = {
   ImageUrl?: unknown;
   CreatedAt?: unknown;
   UpdatedAt?: unknown;
-};
+}
 
-export type LoginResponse = {
+export interface LoginResponse {
   AccessToken: string;
-};
+}
 
-export function createUser(payload: CreateUserPayload) {
-  return api.post<AuthUser>('/auth/create', {
-    FullName: payload.full_name,
+export interface AccessTokenClaims {
+  sub?: number | string;
+  email?: string;
+  fullName?: string;
+  exp?: number;
+  iat?: number;
+}
+
+export async function registerUser(payload: RegisterPayload) {
+  const response = await api.post<AuthUser>("/auth/create", {
+    FullName: payload.fullName,
     Email: payload.email,
     HashedPassword: payload.password,
   });
+
+  return response.data;
 }
 
-export function loginUser(email: string, password: string) {
-  return api.post<LoginResponse>('/auth/login', { email, password });
+export async function loginUser(payload: LoginPayload) {
+  const response = await api.post<LoginResponse>("/auth/login", {
+    Email: payload.email,
+    Password: payload.password,
+  });
+
+  return response.data;
+}
+
+export function parseAccessToken(accessToken: string): AccessTokenClaims | null {
+  try {
+    const [, payload] = accessToken.split(".");
+    if (!payload) return null;
+
+    const normalizedPayload = payload
+      .replace(/-/g, "+")
+      .replace(/_/g, "/")
+      .padEnd(Math.ceil(payload.length / 4) * 4, "=");
+    const decodedPayload = atob(normalizedPayload);
+
+    return JSON.parse(decodedPayload) as AccessTokenClaims;
+  } catch {
+    return null;
+  }
 }
