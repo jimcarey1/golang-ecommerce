@@ -74,7 +74,7 @@ func HandleUserLogin(userService *services.UserService) http.Handler {
 		cookie := http.Cookie{
 			Name:     "refresh_token",
 			Value:    refreshToken,
-			Path: "/",
+			Path:     "/",
 			Expires:  time.Now().Add(30 * 24 * 60 * time.Minute),
 			Secure:   false,
 			HttpOnly: true,
@@ -86,5 +86,26 @@ func HandleUserLogin(userService *services.UserService) http.Handler {
 		}
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(response)
+	})
+}
+
+func GeneratePresignedUrl(userService *services.UserService) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fileName := r.URL.Query().Get("file_name")
+		//Generate unique filenames to avoid the filename clashing.
+		fileName = fmt.Sprintf("%s-%d", fileName, time.Now().Unix())
+
+		presignedUrl, err := userService.GeneratePresignedUrl(r.Context(), "nidhhiedd", fileName)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("Internal Server Error: %v\n", err), http.StatusInternalServerError)
+			return
+		}
+
+		type response struct {
+			URL string `json:"url"`
+		}
+		requestResponse := response{URL: presignedUrl}
+		//Write json to the response writer.
+		json.NewEncoder(w).Encode(requestResponse)
 	})
 }

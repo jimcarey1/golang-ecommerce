@@ -9,6 +9,7 @@ import (
 func addRoutes(mux *mux.Router, userService *services.UserService, addressService *services.AddressService) {
 	mux.Handle("/auth/create", handlers.HandleCreateUser(userService)).Methods("POST")
 	mux.Handle("/auth/login", handlers.HandleUserLogin(userService)).Methods("POST")
+	mux.Handle("/get-presigned/url", handlers.GeneratePresignedUrl(userService)).Methods("GET")
 
 	mux.Handle("/user/{userId:[0-9]+}/addresses/add", handlers.HandleCreateAddress(addressService)).Methods("POST")
 	mux.Handle("/user/{userId:[0-9]+}/addresses", handlers.HandleGetUserAddresses(addressService)).Methods("GET")
