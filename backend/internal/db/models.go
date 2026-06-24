@@ -5,8 +5,53 @@
 package db
 
 import (
+	"database/sql/driver"
+	"fmt"
+
 	"github.com/jackc/pgx/v5/pgtype"
 )
+
+type SellMode string
+
+const (
+	SellModeFixed   SellMode = "fixed"
+	SellModeAuction SellMode = "auction"
+)
+
+func (e *SellMode) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = SellMode(s)
+	case string:
+		*e = SellMode(s)
+	default:
+		return fmt.Errorf("unsupported scan type for SellMode: %T", src)
+	}
+	return nil
+}
+
+type NullSellMode struct {
+	SellMode SellMode
+	Valid    bool // Valid is true if SellMode is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullSellMode) Scan(value interface{}) error {
+	if value == nil {
+		ns.SellMode, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.SellMode.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullSellMode) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.SellMode), nil
+}
 
 type Address struct {
 	ID         int32
@@ -20,6 +65,30 @@ type Address struct {
 	UpdatedAt  pgtype.Timestamptz
 	UserID     int32
 	IsPrimary  bool
+}
+
+type Category struct {
+	ID           int32
+	CategoryName string
+	ImageUrl     pgtype.Text
+	CreatedAt    pgtype.Timestamptz
+	UpdatedAt    pgtype.Timestamptz
+	ParentID     pgtype.Int4
+}
+
+type Product struct {
+	ID                 int32
+	ProductName        string
+	ProductDescription string
+	Brand              string
+	Price              pgtype.Numeric
+	Mode               NullSellMode
+	Attributes         []byte
+	CategoryID         pgtype.Int4
+	SubcategoryID      pgtype.Int4
+	UserID             pgtype.Int4
+	CreatedAt          pgtype.Timestamptz
+	UpdatedAt          pgtype.Timestamptz
 }
 
 type User struct {
