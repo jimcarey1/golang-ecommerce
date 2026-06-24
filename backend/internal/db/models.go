@@ -89,6 +89,7 @@ type Product struct {
 	UserID             pgtype.Int4
 	CreatedAt          pgtype.Timestamptz
 	UpdatedAt          pgtype.Timestamptz
+	Images             []string
 }
 
 type User struct {
