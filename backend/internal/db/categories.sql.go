@@ -14,7 +14,7 @@ import (
 const createCategory = `-- name: CreateCategory :one
 INSERT INTO categories (category_name, image_url, parent_id)
 VALUES ($1, $2, $3)
-RETURNING id, category_name, image_url, created_at, updated_at, parent_id
+RETURNING id, category_name, image_url, created_at, updated_at, parent_id, is_deleted
 `
 
 type CreateCategoryParams struct {
@@ -33,17 +33,19 @@ func (q *Queries) CreateCategory(ctx context.Context, arg CreateCategoryParams) 
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.ParentID,
+		&i.IsDeleted,
 	)
 	return i, err
 }
 
 const getCategoryByName = `-- name: GetCategoryByName :one
-SELECT category_name, image_url
+SELECT id, category_name, image_url
 FROM categories
-WHERE category_name = $1
+WHERE category_name = $1 AND is_deleted = false
 `
 
 type GetCategoryByNameRow struct {
+	ID           int32
 	CategoryName string
 	ImageUrl     pgtype.Text
 }
@@ -51,17 +53,18 @@ type GetCategoryByNameRow struct {
 func (q *Queries) GetCategoryByName(ctx context.Context, categoryName string) (GetCategoryByNameRow, error) {
 	row := q.db.QueryRow(ctx, getCategoryByName, categoryName)
 	var i GetCategoryByNameRow
-	err := row.Scan(&i.CategoryName, &i.ImageUrl)
+	err := row.Scan(&i.ID, &i.CategoryName, &i.ImageUrl)
 	return i, err
 }
 
 const getParentCategories = `-- name: GetParentCategories :many
-SELECT category_name, image_url
+SELECT id, category_name, image_url
 FROM categories
-WHERE parent_id IS NULL
+WHERE parent_id IS NULL AND is_deleted = false
 `
 
 type GetParentCategoriesRow struct {
+	ID           int32
 	CategoryName string
 	ImageUrl     pgtype.Text
 }
@@ -75,7 +78,7 @@ func (q *Queries) GetParentCategories(ctx context.Context) ([]GetParentCategorie
 	var items []GetParentCategoriesRow
 	for rows.Next() {
 		var i GetParentCategoriesRow
-		if err := rows.Scan(&i.CategoryName, &i.ImageUrl); err != nil {
+		if err := rows.Scan(&i.ID, &i.CategoryName, &i.ImageUrl); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -87,12 +90,13 @@ func (q *Queries) GetParentCategories(ctx context.Context) ([]GetParentCategorie
 }
 
 const getSubCategories = `-- name: GetSubCategories :many
-SELECT category_name, image_url
+SELECT id, category_name, image_url
 FROM categories
-WHERE parent_id = $1
+WHERE parent_id = $1 AND is_deleted = false
 `
 
 type GetSubCategoriesRow struct {
+	ID           int32
 	CategoryName string
 	ImageUrl     pgtype.Text
 }
@@ -106,7 +110,7 @@ func (q *Queries) GetSubCategories(ctx context.Context, parentID pgtype.Int4) ([
 	var items []GetSubCategoriesRow
 	for rows.Next() {
 		var i GetSubCategoriesRow
-		if err := rows.Scan(&i.CategoryName, &i.ImageUrl); err != nil {
+		if err := rows.Scan(&i.ID, &i.CategoryName, &i.ImageUrl); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

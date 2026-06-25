@@ -4,16 +4,16 @@ VALUES ($1, $2, $3)
 RETURNING *;
 
 -- name: GetSubCategories :many
-SELECT category_name, image_url
+SELECT id, category_name, image_url
 FROM categories
-WHERE parent_id = $1;
+WHERE parent_id = $1 AND is_deleted = false;
 
 -- name: GetParentCategories :many
-SELECT category_name, image_url
+SELECT id, category_name, image_url
 FROM categories
-WHERE parent_id IS NULL;
+WHERE parent_id IS NULL AND is_deleted = false;
 
 -- name: GetCategoryByName :one
-SELECT category_name, image_url
+SELECT id, category_name, image_url
 FROM categories
-WHERE category_name = $1;
+WHERE category_name = $1 AND is_deleted = false;

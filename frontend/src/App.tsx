@@ -3,6 +3,7 @@ import { Navigate, Route, Routes, useNavigate } from "react-router-dom";
 import AuthModal from "./components/AuthModal.tsx";
 import CheckoutView from "./components/CheckoutView.tsx";
 import CommunicationView from "./components/CommunicationView.tsx";
+import CategoriesPage from "./pages/CategoriesPage.tsx";
 import DashboardView from "./components/DashboardView.tsx";
 import EligibilityWarningBanner from "./components/EligibilityWarningBanner.tsx";
 import Footer from "./components/Footer.tsx";
@@ -19,6 +20,7 @@ const TAB_PATHS: Record<string, string> = {
   marketplace: "/",
   profile: "/profile",
   sell: "/sell",
+  categories: "/categories",
   dashboard: "/dashboard",
   inbox: "/inbox",
 };
@@ -35,33 +37,16 @@ export default function App() {
     listings,
     loadingCatalog,
     fetchCatalog,
-    createListing,
   } = useCatalog();
 
   const {
     currentUser,
     authModal,
     openAuthModal,
-    syncUserProfile,
     logout,
   } = useAuth(fetchCatalog);
 
   const { unreadCount } = useNotifications(currentUser);
-
-
-  async function handleCreateListing(itemDetails: {
-    title: string;
-    description: string;
-    price: number;
-    category: string;
-    imageUrl?: string;
-  }) {
-    await createListing(itemDetails, currentUser, () => {
-      if (currentUser) {
-        syncUserProfile(currentUser.id);
-      }
-    });
-  }
 
   function handleLogout() {
     logout();
@@ -159,10 +144,11 @@ export default function App() {
             element={(
               <SellPage
                 onSwitchTab={handleSwitchTab}
-                onListItem={handleCreateListing}
               />
             )}
           />
+
+          <Route path="/categories" element={<CategoriesPage />} />
 
           <Route
             path="/dashboard"

@@ -95,7 +95,7 @@ func GeneratePresignedUrl(userService *services.UserService) http.Handler {
 		//Generate unique filenames to avoid the filename clashing.
 		fileName = fmt.Sprintf("%s-%d", fileName, time.Now().Unix())
 
-		presignedUrl, err := userService.GeneratePresignedUrl(r.Context(), "nidhhiedd", fileName)
+		presignedUrl, err := userService.GeneratePresignedUrl(r.Context(), "nidhiedd", fileName)
 		if err != nil {
 			http.Error(w, fmt.Sprintf("Internal Server Error: %v\n", err), http.StatusInternalServerError)
 			return

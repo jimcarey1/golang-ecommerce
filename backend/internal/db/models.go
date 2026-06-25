@@ -74,6 +74,7 @@ type Category struct {
 	CreatedAt    pgtype.Timestamptz
 	UpdatedAt    pgtype.Timestamptz
 	ParentID     pgtype.Int4
+	IsDeleted    bool
 }
 
 type Product struct {
@@ -82,14 +83,15 @@ type Product struct {
 	ProductDescription string
 	Brand              string
 	Price              pgtype.Numeric
-	Mode               NullSellMode
+	Mode               SellMode
 	Attributes         []byte
-	CategoryID         pgtype.Int4
-	SubcategoryID      pgtype.Int4
-	UserID             pgtype.Int4
+	CategoryID         int32
+	SubcategoryID      int32
+	UserID             int32
 	CreatedAt          pgtype.Timestamptz
 	UpdatedAt          pgtype.Timestamptz
 	Images             []string
+	IsDeleted          bool
 }
 
 type User struct {

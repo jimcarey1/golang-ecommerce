@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/config"
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jimcarey1/ecommerce/internal/db"
 	"github.com/jimcarey1/ecommerce/internal/httpapi"
 	"github.com/jimcarey1/ecommerce/internal/services"
@@ -17,11 +17,11 @@ func main() {
 	ctx := context.Background()
 	connectionString := "postgres://test_user:yourpassword@localhost:5432/test_db?sslmode=disable"
 
-	conn, err := pgx.Connect(ctx, connectionString)
+	conn, err := pgxpool.New(ctx, connectionString)
 	if err != nil {
 		log.Fatalf("Error connecting to postgres: %v\n", err)
 	}
-	defer conn.Close(ctx)
+	defer conn.Close()
 
 	queries := db.New(conn)
 	awsCfg, err := config.LoadDefaultConfig(ctx,
@@ -33,8 +33,10 @@ func main() {
 
 	userService := services.NewUserService(queries, &awsCfg)
 	addressService := services.NewAddressService(queries)
+	productService := services.NewProductService(queries)
+	categoryService := services.NewCategoryService(queries)
 
-	handler := httpapi.NewServer(userService, addressService)
+	handler := httpapi.NewServer(userService, addressService, productService, categoryService)
 
 	server := http.Server{
 		Addr:         "localhost:8080",

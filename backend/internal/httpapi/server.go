@@ -9,10 +9,15 @@ import (
 	"github.com/jimcarey1/ecommerce/internal/services"
 )
 
-func NewServer(userService *services.UserService, addressService *services.AddressService) http.Handler {
+func NewServer(
+	userService *services.UserService,
+	addressService *services.AddressService,
+	productService *services.ProductService,
+	categoryService *services.CategoryService,
+) http.Handler {
 	mux := mux.NewRouter()
 
-	addRoutes(mux, userService, addressService)
+	addRoutes(mux, userService, addressService, productService, categoryService)
 	var handler http.Handler = mux
 	handler = handlers.LoggingHandler(os.Stdout, handler)
 	handler = handlers.CORS(

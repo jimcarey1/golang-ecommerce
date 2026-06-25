@@ -1,4 +1,4 @@
-import { ShoppingBag, Tag, User, TrendingUp, Mail, LogOut, LogIn } from "lucide-react";
+import { Layers, ShoppingBag, Tag, User, TrendingUp, Mail, LogOut, LogIn } from "lucide-react";
 import { Link, NavLink } from "react-router-dom";
 import type { User as UserType } from "../types.ts";
 
@@ -20,6 +20,7 @@ export default function Navbar({
   const navItems = [
     { path: "/", label: "Marketplace", icon: ShoppingBag },
     { path: "/sell", label: "Sell Item", icon: Tag },
+    { path: "/categories", label: "Categories", icon: Layers },
     { path: "/dashboard", label: "Sales Dashboard", icon: TrendingUp },
     { path: "/inbox", label: "Inbox & Chats", icon: Mail, badge: unreadNotifications },
     { path: "/profile", label: "My Profile", icon: User },

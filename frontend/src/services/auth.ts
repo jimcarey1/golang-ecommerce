@@ -33,6 +33,11 @@ export interface AccessTokenClaims {
   iat?: number;
 }
 
+export interface PresignedUrlResponse {
+  url: string;
+  fields: Record<string, string>;
+}
+
 export async function registerUser(payload: RegisterPayload) {
   const response = await api.post<AuthUser>("/auth/create", {
     FullName: payload.fullName,
@@ -67,4 +72,8 @@ export function parseAccessToken(accessToken: string): AccessTokenClaims | null 
   } catch {
     return null;
   }
+}
+
+export async function getPresignedUrl(fileName: string) {
+  return api.get<PresignedUrlResponse>(`/get-presigned/url?file_name=${encodeURIComponent(fileName)}`);
 }

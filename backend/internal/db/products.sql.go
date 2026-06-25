@@ -14,7 +14,7 @@ import (
 const createProduct = `-- name: CreateProduct :one
 INSERT INTO products (product_name, product_description, brand, price, mode, attributes, category_id, subcategory_id, user_id, images)
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-RETURNING id, product_name, product_description, brand, price, mode, attributes, category_id, subcategory_id, user_id, created_at, updated_at, images
+RETURNING id, product_name, product_description, brand, price, mode, attributes, category_id, subcategory_id, user_id, created_at, updated_at, images, is_deleted
 `
 
 type CreateProductParams struct {
@@ -22,11 +22,11 @@ type CreateProductParams struct {
 	ProductDescription string
 	Brand              string
 	Price              pgtype.Numeric
-	Mode               NullSellMode
+	Mode               SellMode
 	Attributes         []byte
-	CategoryID         pgtype.Int4
-	SubcategoryID      pgtype.Int4
-	UserID             pgtype.Int4
+	CategoryID         int32
+	SubcategoryID      int32
+	UserID             int32
 	Images             []string
 }
 
@@ -58,12 +58,13 @@ func (q *Queries) CreateProduct(ctx context.Context, arg CreateProductParams) (P
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.Images,
+		&i.IsDeleted,
 	)
 	return i, err
 }
 
 const getProductById = `-- name: GetProductById :one
-SELECT id, product_name, product_description, brand, price, mode, attributes, category_id, subcategory_id, user_id, created_at, updated_at, images FROM products
+SELECT id, product_name, product_description, brand, price, mode, attributes, category_id, subcategory_id, user_id, created_at, updated_at, images, is_deleted FROM products
 WHERE id = $1 LIMIT 1
 `
 
@@ -84,16 +85,17 @@ func (q *Queries) GetProductById(ctx context.Context, id int32) (Product, error)
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.Images,
+		&i.IsDeleted,
 	)
 	return i, err
 }
 
 const getProductsByCategory = `-- name: GetProductsByCategory :many
-SELECT id, product_name, product_description, brand, price, mode, attributes, category_id, subcategory_id, user_id, created_at, updated_at, images FROM products
+SELECT id, product_name, product_description, brand, price, mode, attributes, category_id, subcategory_id, user_id, created_at, updated_at, images, is_deleted FROM products
 WHERE category_id = $1
 `
 
-func (q *Queries) GetProductsByCategory(ctx context.Context, categoryID pgtype.Int4) ([]Product, error) {
+func (q *Queries) GetProductsByCategory(ctx context.Context, categoryID int32) ([]Product, error) {
 	rows, err := q.db.Query(ctx, getProductsByCategory, categoryID)
 	if err != nil {
 		return nil, err
@@ -116,6 +118,7 @@ func (q *Queries) GetProductsByCategory(ctx context.Context, categoryID pgtype.I
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.Images,
+			&i.IsDeleted,
 		); err != nil {
 			return nil, err
 		}
