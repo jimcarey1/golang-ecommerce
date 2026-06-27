@@ -1,7 +1,8 @@
-import { Info, Search, ShoppingBag } from "lucide-react";
-import { CATEGORIES } from "../constants/categories.ts";
-import type { Item, User } from "../types.ts";
+import { useEffect, useState } from "react";
+import { Search, ShoppingBag } from "lucide-react";
+import type { Item } from "../types.ts";
 import ProductCard from "./ProductCard.tsx";
+import { getParentCategories } from "../services/categories.ts";
 
 interface MarketplaceViewProps {
   listings: Item[];
@@ -10,7 +11,6 @@ interface MarketplaceViewProps {
   setSearchQuery: (value: string) => void;
   selectedCategory: string;
   setSelectedCategory: (value: string) => void;
-  currentUser: User | null;
   onBuyNow: (item: Item) => void;
 }
 
@@ -21,9 +21,38 @@ export default function MarketplaceView({
   setSearchQuery,
   selectedCategory,
   setSelectedCategory,
-  currentUser,
   onBuyNow,
 }: MarketplaceViewProps) {
+  const [categories, setCategories] = useState<string[]>(["All Categories"]);
+  const [categoryLoadError, setCategoryLoadError] = useState("");
+
+  useEffect(() => {
+    let ignore = false;
+
+    async function loadCategories() {
+      try {
+        const parentCategories = await getParentCategories();
+        const categoryNames = parentCategories.map(
+          (category) => category.CategoryName,
+        );
+
+        if (!ignore) {
+          setCategories(["All Categories", ...categoryNames]);
+        }
+      } catch {
+        if (!ignore) {
+          setCategoryLoadError("Unable to load categories.");
+        }
+      }
+    }
+
+    loadCategories();
+
+    return () => {
+      ignore = true;
+    };
+  }, []);
+
   const filteredListings = listings.filter((item) => {
     const isCategoryMatched = selectedCategory === "All Categories" || item.category === selectedCategory;
     const isSearchQueryMatched =
@@ -48,7 +77,7 @@ export default function MarketplaceView({
         </div>
 
         <div className="flex items-center gap-1.5 overflow-x-auto w-full md:w-auto pb-1 md:pb-0 scrollbar-none pr-1 justify-start md:justify-end">
-          {CATEGORIES.map((cat) => (
+          {categories.map((cat) => (
             <button
               key={cat}
               onClick={() => setSelectedCategory(cat)}
@@ -63,6 +92,12 @@ export default function MarketplaceView({
           ))}
         </div>
       </div>
+
+      {categoryLoadError && (
+        <p className="text-xs font-semibold text-red-600">
+          {categoryLoadError}
+        </p>
+      )}
 
       <div className="flex items-center justify-between pb-2 border-b border-gray-200">
         <h2 className="text-xl font-black text-gray-950 font-sans tracking-tight">
@@ -102,21 +137,11 @@ export default function MarketplaceView({
             <ProductCard
               key={item.id}
               item={item}
-              currentUser={currentUser}
               onBuyNow={onBuyNow}
             />
           ))}
         </div>
       )}
-
-      <div className="p-4 rounded-xl border border-blue-150 bg-blue-50/20 max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 font-sans shadow-2xs">
-        <div className="flex items-start gap-2.5">
-          <Info className="h-5 w-5 text-[#0064d2] shrink-0 mt-0.5" />
-          <p className="text-xs text-indigo-950 leading-normal max-w-xl">
-            <strong>EBay Clone Fullstack Guide:</strong> Create account profiles using traditional email/password settings. Fill out addresses and mock billing profiles, buy items, track active shipment states on your seller dashboard, and trigger automated emails!
-          </p>
-        </div>
-      </div>
     </div>
   );
 }
