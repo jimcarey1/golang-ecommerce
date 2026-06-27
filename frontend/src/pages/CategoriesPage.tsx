@@ -25,10 +25,9 @@ export default function CategoriesPage() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
 
-  const [file, setFile] = useState<File>(null)
+  const [file, setFile] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState("")
-  const inputFileRef = useRef(null)
-  let imageUrl = "";
+  const inputFileRef = useRef<HTMLInputElement | null>(null)
 
   const refreshCategories = useCallback(async () => {
     setLoadError("");
@@ -72,24 +71,29 @@ export default function CategoriesPage() {
   }, [refreshCategories]);
 
   function handleFileChange(e: ChangeEvent<HTMLInputElement>){
-    setFile(e.target.files[0])
-    setPreviewUrl(URL.createObjectURL(e.target.files[0]))
+    const selectedFile = e.target.files?.[0];
+    if (!selectedFile) return;
+
+    setFile(selectedFile)
+    setPreviewUrl(URL.createObjectURL(selectedFile))
   }
 
   async function uploadImage() {
+    if (!file) return "";
+
     const presignUrl = await getPresignedUrl(file.name)
     const uploadUrl = presignUrl.data.url
 
     try{
-      const response = await axios.put(uploadUrl, file, {
+      await axios.put(uploadUrl, file, {
         headers: {
           "Content-Type" : file.type
         }
       })
-      imageUrl = uploadUrl.split("?")[0]
-      console.log(uploadUrl.split("?")[0])
+      return uploadUrl.split("?")[0]
     }catch(error){
       console.log(error)
+      return "";
     }
   }
 
@@ -107,13 +111,18 @@ export default function CategoriesPage() {
     }
 
     try {
+      let imageUrl = "";
       if(file){
-        await uploadImage()
+        imageUrl = await uploadImage()
       }
       
       await createCategory({CategoryName:categoryName, ImageUrl:imageUrl, ParentID: Number(parentId)});
       await refreshCategories();
-      inputFileRef.current = null
+      setFile(null);
+      setPreviewUrl("");
+      if (inputFileRef.current) {
+        inputFileRef.current.value = "";
+      }
       return {
         error: "",
         success: "Category added.",
