@@ -121,7 +121,6 @@ export default function App() {
                 setSearchQuery={setSearchQuery}
                 selectedCategory={selectedCategory}
                 setSelectedCategory={setSelectedCategory}
-                currentUser={currentUser}
                 onBuyNow={triggerBuyCheckout}
               />
             )}

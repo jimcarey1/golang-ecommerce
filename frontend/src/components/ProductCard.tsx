@@ -1,15 +1,16 @@
 import { User, ShoppingCart, ArrowRight } from "lucide-react";
-import type { Item, User as UserType } from "../types.ts";
+import type { Item } from "../types.ts";
+import { useAuthContext } from "../context/AuthContext.tsx";
 
 interface ProductCardProps {
   key?: string;
   item: Item;
-  currentUser: UserType | null;
   onBuyNow: (item: Item) => void;
 }
 
-export default function ProductCard({ item, currentUser, onBuyNow }: ProductCardProps) {
-  const isOwnListing = currentUser && item.sellerId === Number(currentUser.id);
+export default function ProductCard({ item, onBuyNow }: ProductCardProps) {
+  const { user } = useAuthContext()
+  const isOwnListing = user && item.sellerId === Number(user.ID);
 
   return (
     <div className="group flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xs transition-all duration-200 hover:-translate-y-1 hover:border-gray-300 hover:shadow-md">
