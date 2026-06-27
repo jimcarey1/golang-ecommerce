@@ -6,6 +6,7 @@ package db
 
 import (
 	"database/sql/driver"
+	"encoding/json"
 	"fmt"
 
 	"github.com/jackc/pgx/v5/pgtype"
@@ -84,7 +85,7 @@ type Product struct {
 	Brand              string
 	Price              pgtype.Numeric
 	Mode               SellMode
-	Attributes         []byte
+	Attributes         json.RawMessage
 	CategoryID         int32
 	SubcategoryID      int32
 	UserID             int32
