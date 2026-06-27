@@ -19,5 +19,12 @@ export interface Product{
 export type CreateProductPayload = Omit<Product, "ID" | "CreatedAt" | "UpdatedAt">;
 
 export async function createProduct(data: CreateProductPayload) {
-    return api.post("/products/add", data)
+    const response =  await api.post<Product>("/products/add", data)
+    return response.data
+}
+
+export async function getProductById(productId: number) {
+    const response = await api.get<Product>(`/products/${productId}`)
+    console.log(response.data)
+    return response.data
 }

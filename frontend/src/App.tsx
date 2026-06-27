@@ -9,6 +9,7 @@ import EligibilityWarningBanner from "./components/EligibilityWarningBanner.tsx"
 import Footer from "./components/Footer.tsx";
 import MarketplaceView from "./components/MarketplaceView.tsx";
 import Navbar from "./components/Navbar.tsx";
+import ProductPage from "./pages/ProductPage.tsx";
 import ProfilePage from "./pages/ProfilePage.tsx";
 import SellPage from "./pages/SellPage.tsx";
 import { useAuth } from "./hooks/useAuth.ts";
@@ -127,6 +128,11 @@ export default function App() {
           />
 
           <Route path="/marketplace" element={<Navigate to="/" replace />} />
+
+          <Route
+            path="/products/:productId"
+            element={<ProductPage onBuyNow={triggerBuyCheckout} />}
+          />
 
           <Route
             path="/profile"
