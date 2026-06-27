@@ -38,7 +38,7 @@ export default function SellPageContent({
     const subcategoryId = Number(getFormString(formData, "subcategory_id"));
     const mode = "fixed";
     const brand = getFormString(formData, "brand");
-    const attributes = parseProductAttributes(description);
+    const attributes = parseProductAttributes(formData);
     const priceNum = parseFloat(price);
 
     if (!user) {
@@ -76,8 +76,9 @@ export default function SellPageContent({
         UserID: user.ID,
         Attributes: JSON.stringify(attributes),
       };
-
-      await createProduct(data);
+      console.log(data)
+      const product = await createProduct(data);
+      console.log(product)
       listingFormRef.current?.reset();
       clearSelectedImages();
 

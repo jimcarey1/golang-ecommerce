@@ -1,5 +1,5 @@
 import { useEffect, useState, type RefObject, type ChangeEvent } from "react";
-import { Check, Tag } from "lucide-react";
+import { Check, Plus, Tag, Trash2 } from "lucide-react";
 import { type ListingFormState, type SelectedImage } from "./types";
 import SubmitListingButton from "./SubmitListingButton";
 import SelectedImagePreviewGrid from "./SelectedImagePreviewGrid";
@@ -8,6 +8,10 @@ import {
   getSubCategories,
   type Category,
 } from "../../services/categories";
+
+interface AttributeRow {
+  id: string;
+}
 
 interface ListingFormProps {
   formRef: RefObject<HTMLFormElement | null>;
@@ -33,6 +37,26 @@ export default function ListingForm({
   const [selectedCategoryId, setSelectedCategoryId] = useState("");
   const [loadingCategories, setLoadingCategories] = useState(true);
   const [categoryError, setCategoryError] = useState("");
+  const [attributeRows, setAttributeRows] = useState<AttributeRow[]>([]);
+
+  function createAttributeRow() {
+    const randomId =
+      typeof crypto.randomUUID === "function"
+        ? crypto.randomUUID()
+        : `${Date.now()}-${Math.random()}`;
+
+    return { id: randomId };
+  }
+
+  function addAttributeRow() {
+    setAttributeRows((currentRows) => [...currentRows, createAttributeRow()]);
+  }
+
+  function removeAttributeRow(attributeId: string) {
+    setAttributeRows((currentRows) =>
+      currentRows.filter((row) => row.id !== attributeId),
+    );
+  }
 
   useEffect(() => {
     async function loadCategories() {
@@ -117,6 +141,14 @@ export default function ListingForm({
             />
           </div>
 
+          <textarea
+            name="description"
+            required
+            rows={4}
+            placeholder="Describe item condition and details..."
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 focus:ring-1 focus:ring-[#0064d2] outline-hidden"
+          />
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <select
               name="category_id"
@@ -185,14 +217,6 @@ export default function ListingForm({
             />
           </div>
 
-          <textarea
-            name="description"
-            required
-            rows={4}
-            placeholder="Describe item condition and details..."
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 focus:ring-1 focus:ring-[#0064d2] outline-hidden"
-          />
-
           <input
             ref={fileInputRef}
             type="file"
@@ -202,6 +226,60 @@ export default function ListingForm({
             multiple
             className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 focus:ring-1 focus:ring-[#0064d2] outline-hidden"
           />
+
+          <div className="rounded-lg border border-gray-200 bg-gray-50/60 p-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h2 className="text-xs font-bold uppercase tracking-wider text-gray-700">
+                  Product Attributes
+                </h2>
+                <p className="mt-1 text-xs text-gray-500">
+                  Add details like CPU_CORES, RAM, SSD, HDD, or Graphics Card.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={addAttributeRow}
+                className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-[#0064d2]/25 bg-white px-3 py-2 text-xs font-bold text-[#0064d2] hover:bg-[#0064d2]/5"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                Add attributes
+              </button>
+            </div>
+
+            {attributeRows.length > 0 && (
+              <div className="mt-4 space-y-3">
+                {attributeRows.map((row) => (
+                  <div
+                    key={row.id}
+                    className="grid grid-cols-1 gap-2 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]"
+                  >
+                    <input
+                      type="text"
+                      name="attribute_keys"
+                      placeholder="Attribute name, e.g. RAM"
+                      className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-800 focus:ring-1 focus:ring-[#0064d2] outline-hidden"
+                    />
+                    <input
+                      type="text"
+                      name="attribute_values"
+                      placeholder="Value, e.g. 16GB"
+                      className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-800 focus:ring-1 focus:ring-[#0064d2] outline-hidden"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeAttributeRow(row.id)}
+                      aria-label="Remove attribute"
+                      className="inline-flex items-center justify-center rounded-lg border border-red-100 bg-white px-3 py-2 text-red-600 hover:bg-red-50"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
 
           {selectedImages.length > 0 && (
             <SelectedImagePreviewGrid
