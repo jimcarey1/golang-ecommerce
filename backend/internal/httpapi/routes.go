@@ -21,7 +21,8 @@ func addRoutes(
 	mux.Handle("/user/{userId:[0-9]+}/addresses", handlers.HandleGetUserAddresses(addressService)).Methods("GET")
 
 	mux.Handle("/products/add", handlers.HanldeCreateProduct(productService)).Methods("POST")
-
+	mux.Handle("/products/{productId:[0-9]+}", handlers.HandleGetIndividualProduct(productService)).Methods("GET")
+	
 	mux.Handle("/category/add", handlers.HandleCreateCategory(categoryService)).Methods("POST")
 	mux.Handle("/category/parents", handlers.HandleGetParentCategories(categoryService)).Methods("GET")
 	mux.Handle("/category/{categoryName}", handlers.HandleGetCategory(categoryService)).Methods("GET")
