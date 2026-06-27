@@ -1,10 +1,9 @@
-import { useActionState, useEffect, useRef, useState } from "react";
+import { useActionState, useEffect, useRef } from "react";
 import { getFormString } from "../../utils/helpers";
 import { initialListingFormState, type ListingFormState } from "./types";
 import { useImageUpload } from "../../hooks/useImageUpload";
 import ListingForm from "./ListingForm";
 import type { CreateProductPayload } from "../../services/products";
-import { getParentCategories, type Category } from "../../services/categories";
 import { createProduct } from "../../services/products";
 import { useAuthContext } from "../../context/AuthContext";
 import { parseProductAttributes } from "../../utils/parseAttributes";
@@ -18,9 +17,6 @@ export default function SellPageContent({
 }: SellPageContentProps) {
   const { user } = useAuthContext()
   const listingFormRef = useRef<HTMLFormElement>(null);
-
-  const [categories, setCategories] = useState<Category[]>([])
-  const [subCategories, setSubCategories] = useState<Category[]>([])
 
   const {
     fileInputRef,
@@ -115,17 +111,6 @@ export default function SellPageContent({
     return () => window.clearTimeout(timer);
   }, [formState.success, onSwitchTab]);
 
-  useEffect(()=>{
-    async function fetchParentCategories(){
-      try{
-        const response = await getParentCategories()
-        setCategories(response)
-      }catch(error){
-        console.log(error)
-      }
-    }
-    fetchParentCategories()
-  }, [])
   return (
     <div className="max-w-4xl mx-auto">
       <ListingForm
