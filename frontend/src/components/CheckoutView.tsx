@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import { ShoppingBag, ArrowLeft, ShieldCheck, Mail, Phone, Lock, AlertCircle, RefreshCw, Key } from "lucide-react";
-import type { Item, Order } from "../types.ts";
+import type { Order } from "../types.ts";
+import type { Product } from "../services/products.ts";
 import { useAuthContext } from "../context/AuthContext.tsx";
 import type { AuthUser } from "../services/auth.ts";
 
 interface CheckoutViewProps {
-  item: Item;
+  item: Product;
   onCancel: () => void;
   onCompletePurchase: () => void;
 }
@@ -87,7 +88,7 @@ function AuthenticatedCheckoutView({
           "Authorization": `Bearer ${user.ID}`,
         },
         body: JSON.stringify({
-          itemId: item.id,
+          itemId: item.ID,
           verifiedVia,
           verifiedContact,
         }),
@@ -176,23 +177,23 @@ function AuthenticatedCheckoutView({
 
           <div className="flex gap-3">
             <img
-              src={item.imageUrl}
-              alt={item.title}
+              src={item.Images[0]}
+              alt={item.ProductName}
               className="h-16 w-16 rounded object-cover border border-gray-200 shrink-0 bg-gray-50"
             />
             <div>
               <span className="text-[9px] font-bold text-[#0064d2] bg-[#0064d2]/10 px-1.5 py-0.5 rounded uppercase">
-                {item.category}
+                {item.SubCategoryID}
               </span>
-              <h4 className="text-xs font-bold text-gray-900 line-clamp-2 mt-1 leading-tight">{item.title}</h4>
-              <p className="text-[11px] text-gray-500 mt-0.5">Seller: {item.sellerName}</p>
+              <h4 className="text-xs font-bold text-gray-900 line-clamp-2 mt-1 leading-tight">{item.ProductName}</h4>
+              <p className="text-[11px] text-gray-500 mt-0.5">Seller: Seller Name</p>
             </div>
           </div>
 
           <div className="border-t border-gray-100 pt-3 space-y-2.5 text-xs text-gray-600">
             <div className="flex justify-between">
               <span>EBay Purchase Price</span>
-              <span className="font-bold text-gray-900">${item.price.toLocaleString()}</span>
+              <span className="font-bold text-gray-900">${item.Price.toLocaleString()}</span>
             </div>
             
             <div className="flex justify-between text-xs">
@@ -202,7 +203,7 @@ function AuthenticatedCheckoutView({
 
             <div className="border-t border-gray-150 pt-2 flex justify-between text-sm font-black text-gray-950">
               <span>Total Charge ($)</span>
-              <span>${item.price.toLocaleString()}</span>
+              <span>${item.Price.toLocaleString()}</span>
             </div>
           </div>
 
@@ -384,7 +385,7 @@ function AuthenticatedCheckoutView({
               </div>
               <div className="text-right">
                 <span className="block text-[8px] uppercase tracking-widest text-gray-400">Payable amount</span>
-                <span className="text-sm font-black text-green-300">${item.price}</span>
+                <span className="text-sm font-black text-green-300">${item.Price}</span>
               </div>
             </div>
 

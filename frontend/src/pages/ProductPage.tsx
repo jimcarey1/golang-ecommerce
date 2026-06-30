@@ -12,10 +12,9 @@ import {
 } from "lucide-react";
 import { useAuthContext } from "../context/AuthContext";
 import { getProductById, type Product } from "../services/products";
-import type { Item } from "../types";
 
 interface ProductPageProps {
-  onBuyNow: (item: Item) => void;
+  onBuyNow: (item: Product) => void;
 }
 
 function getProductImages(product: Product | null) {
@@ -45,21 +44,6 @@ function getAttributes(product: Product | null) {
   } catch {
     return [];
   }
-}
-
-function productToItem(product: Product): Item {
-  return {
-    id: String(product.ID),
-    title: product.ProductName,
-    description: product.ProductDescription,
-    price: product.Price,
-    category: `Category #${product.CategoryID}`,
-    imageUrl: product.Images?.[0] ?? "",
-    sellerId: product.UserID,
-    sellerName: `Seller #${product.UserID}`,
-    status: "active",
-    createdAt: String(product.CreatedAt ?? ""),
-  };
 }
 
 export default function ProductPage({ onBuyNow }: ProductPageProps) {
@@ -230,7 +214,7 @@ export default function ProductPage({ onBuyNow }: ProductPageProps) {
 
             <button
               type="button"
-              onClick={() => onBuyNow(productToItem(product))}
+              onClick={() => onBuyNow(product)}
               disabled={isOwnListing}
               className="mt-5 flex w-full items-center justify-center gap-2 rounded-lg bg-[#0064d2] px-5 py-3 text-sm font-black text-white shadow-xs hover:bg-[#0051ab] disabled:cursor-not-allowed disabled:bg-gray-200 disabled:text-gray-500"
             >

@@ -1,17 +1,17 @@
 import { useEffect, useState } from "react";
 import { Search, ShoppingBag } from "lucide-react";
-import type { Item } from "../types.ts";
+import type { Product } from "../services/products.ts";
 import ProductCard from "./ProductCard.tsx";
-import { getParentCategories } from "../services/categories.ts";
+import { getParentCategories, type Category } from "../services/categories.ts";
 
 interface MarketplaceViewProps {
-  listings: Item[];
+  listings: Product[];
   loadingCatalog: boolean;
   searchQuery: string;
   setSearchQuery: (value: string) => void;
-  selectedCategory: string;
-  setSelectedCategory: (value: string) => void;
-  onBuyNow: (item: Item) => void;
+  selectedCategory: number;
+  setSelectedCategory: (value: number) => void;
+  onBuyNow: (item: Product) => void;
 }
 
 export default function MarketplaceView({
@@ -23,7 +23,7 @@ export default function MarketplaceView({
   setSelectedCategory,
   onBuyNow,
 }: MarketplaceViewProps) {
-  const [categories, setCategories] = useState<string[]>(["All Categories"]);
+  const [categories, setCategories] = useState<Category[]>([{"ID":0, "CategoryName":"All Categories"}]);
   const [categoryLoadError, setCategoryLoadError] = useState("");
 
   useEffect(() => {
@@ -32,12 +32,9 @@ export default function MarketplaceView({
     async function loadCategories() {
       try {
         const parentCategories = await getParentCategories();
-        const categoryNames = parentCategories.map(
-          (category) => category.CategoryName,
-        );
 
         if (!ignore) {
-          setCategories(["All Categories", ...categoryNames]);
+          setCategories([{ID:0, CategoryName:"All Categories"}, ...parentCategories]);
         }
       } catch {
         if (!ignore) {
@@ -54,10 +51,10 @@ export default function MarketplaceView({
   }, []);
 
   const filteredListings = listings.filter((item) => {
-    const isCategoryMatched = selectedCategory === "All Categories" || item.category === selectedCategory;
+    const isCategoryMatched = selectedCategory === 0 || item.CategoryID === selectedCategory;
     const isSearchQueryMatched =
-      item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.description.toLowerCase().includes(searchQuery.toLowerCase());
+      item.ProductName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.ProductDescription.toLowerCase().includes(searchQuery.toLowerCase());
 
     return isCategoryMatched && isSearchQueryMatched;
   });
@@ -79,15 +76,15 @@ export default function MarketplaceView({
         <div className="flex items-center gap-1.5 overflow-x-auto w-full md:w-auto pb-1 md:pb-0 scrollbar-none pr-1 justify-start md:justify-end">
           {categories.map((cat) => (
             <button
-              key={cat}
-              onClick={() => setSelectedCategory(cat)}
+              key={cat.ID}
+              onClick={() => setSelectedCategory(cat.ID)}
               className={`px-3.5 py-1.5 text-xs font-semibold rounded-full shrink-0 transition-colors cursor-pointer ${
-                selectedCategory === cat
+                selectedCategory === cat.ID
                   ? "bg-black text-white"
                   : "bg-gray-100 text-gray-600 hover:bg-gray-200"
               }`}
             >
-              {cat}
+              {cat.CategoryName}
             </button>
           ))}
         </div>
@@ -101,7 +98,7 @@ export default function MarketplaceView({
 
       <div className="flex items-center justify-between pb-2 border-b border-gray-200">
         <h2 className="text-xl font-black text-gray-950 font-sans tracking-tight">
-          {selectedCategory === "All Categories" ? "Trending Today" : selectedCategory}
+          {selectedCategory === 0 ? "Trending Today" : selectedCategory}
         </h2>
         <span className="text-xs text-gray-500 font-bold bg-white px-2.5 py-1 rounded-md border border-gray-150">
           {filteredListings.length} items catalogued
@@ -119,11 +116,11 @@ export default function MarketplaceView({
           <p className="text-xs text-gray-400 mt-1 max-w-xs mx-auto px-4">
             We couldn't match items matching choice "{searchQuery || selectedCategory}". Try tweaking your filter queries or list an item yourself.
           </p>
-          {(searchQuery || selectedCategory !== "All Categories") && (
+          {(searchQuery || selectedCategory !== 0) && (
             <button
               onClick={() => {
                 setSearchQuery("");
-                setSelectedCategory("All Categories");
+                setSelectedCategory(0);
               }}
               className="mt-4 rounded-md bg-black px-4 py-1.5 text-xs font-bold text-white hover:bg-gray-800"
             >
@@ -132,10 +129,10 @@ export default function MarketplaceView({
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6">
           {filteredListings.map((item) => (
             <ProductCard
-              key={item.id}
+              key={String(item.ID)}
               item={item}
               onBuyNow={onBuyNow}
             />

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Navigate, Route, Routes, useNavigate } from "react-router-dom";
 import AuthModal from "./components/AuthModal.tsx";
 import CheckoutView from "./components/CheckoutView.tsx";
@@ -13,9 +13,8 @@ import ProductPage from "./pages/ProductPage.tsx";
 import ProfilePage from "./pages/ProfilePage.tsx";
 import SellPage from "./pages/SellPage.tsx";
 import { useAuth } from "./hooks/useAuth.ts";
-import { useCatalog } from "./hooks/useCatalog.ts";
-import type { Item } from "./types.ts";
 import { useAuthContext } from "./context/AuthContext.tsx";
+import { getProducts, type Product } from "./services/products.ts";
 
 const TAB_PATHS: Record<string, string> = {
   marketplace: "/",
@@ -29,14 +28,41 @@ const TAB_PATHS: Record<string, string> = {
 export default function App() {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const [selectedCategory, setSelectedCategory] = useState<string>("All Categories");
-  const [checkoutItem, setCheckoutItem] = useState<Item | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<number>(0);
+  const [checkoutItem, setCheckoutItem] = useState<Product | null>(null);
   const [selectedOrderIdForChat, setSelectedOrderIdForChat] = useState<string | null>(null);
   const [eligibilityWarning, setEligibilityWarning] = useState<string | null>(null);
+  const [products, setProducts] = useState<Product[]>([])
+  const [loadProducts, setLoadingProducts] = useState<boolean>(false)
+  //const { listings, loadingCatalog } = useCatalog();
 
-  const { listings, loadingCatalog, fetchCatalog } = useCatalog();
+  //TODO: fetch products
+  useEffect(() => {
+    let ignore = false;
 
-  const { authModal, openAuthModal } = useAuth(fetchCatalog);
+    async function fetchProducts() {
+      setLoadingProducts(true);
+
+      try {
+        const products = await getProducts();
+        if (!ignore && products) {
+          setProducts(products);
+        }
+      } finally {
+        if (!ignore) {
+          setLoadingProducts(false);
+        }
+      }
+    }
+
+    fetchProducts();
+
+    return () => {
+      ignore = true;
+    };
+  }, []);
+
+  const { authModal, openAuthModal } = useAuth(()=>void{});
 
   const { user, logout } = useAuthContext()
 
@@ -47,7 +73,7 @@ export default function App() {
     navigate("/");
   }
 
-  function triggerBuyCheckout(item: Item) {
+  function triggerBuyCheckout(item: Product) {
     if (!user) {
       authModal.setIsSignUpMode(false);
       authModal.setShowAuthModal(true);
@@ -104,8 +130,8 @@ export default function App() {
             path="/"
             element={(
               <MarketplaceView
-                listings={listings}
-                loadingCatalog={loadingCatalog}
+                listings={products}
+                loadingCatalog={loadProducts}
                 searchQuery={searchQuery}
                 setSearchQuery={setSearchQuery}
                 selectedCategory={selectedCategory}
