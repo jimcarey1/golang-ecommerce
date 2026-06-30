@@ -95,3 +95,43 @@ func HandleGetIndividualProduct(service *services.ProductService) http.Handler {
 		}
 	})
 }
+
+func HandleGetProductsByCategorySubtree(service *services.ProductService) http.Handler{
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		categoryId, ok := vars["categoryId"]
+		//If the categoryId is missing return an error.
+		if !ok{
+			http.Error(w, "Missing path parameter: categoryId", http.StatusBadRequest)
+			return
+		}
+		//We are ignoring the error because, We are using regex pattern on routes.
+		categoryIdInt, _ := strconv.Atoi(categoryId)
+
+		products, err := service.GetProductsByCategoryTree(r.Context(), categoryIdInt)
+		if err != nil{
+			http.Error(w, fmt.Sprintf("Internal Server Error: %v\n", err), http.StatusInternalServerError)
+			return
+		}
+
+		if err := json.NewEncoder(w).Encode(products); err != nil{
+			http.Error(w, fmt.Sprintf("Internal Server Error: %v\n", err), http.StatusInternalServerError)
+			return
+		}
+	})
+}
+
+func HandleGetProducts(service *services.ProductService) http.Handler{
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		products, err := service.GetProducts(r.Context())
+		if err != nil{
+			http.Error(w, fmt.Sprintf("Internal Server Error: %v\n", err), http.StatusInternalServerError)
+			return
+		}
+
+		if err := json.NewEncoder(w).Encode(products); err != nil{
+			http.Error(w, fmt.Sprintf("Internal Server Error: %v\n", err), http.StatusInternalServerError)
+			return
+		}
+	})
+}

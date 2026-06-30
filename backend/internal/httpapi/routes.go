@@ -22,7 +22,9 @@ func addRoutes(
 
 	mux.Handle("/products/add", handlers.HanldeCreateProduct(productService)).Methods("POST")
 	mux.Handle("/products/{productId:[0-9]+}", handlers.HandleGetIndividualProduct(productService)).Methods("GET")
-	
+	mux.Handle("/products/category/{categoryId:[0-9]+}", handlers.HandleGetProductsByCategorySubtree(productService)).Methods("GET")
+	mux.Handle("/products", handlers.HandleGetProducts(productService)).Methods("GET")
+
 	mux.Handle("/category/add", handlers.HandleCreateCategory(categoryService)).Methods("POST")
 	mux.Handle("/category/parents", handlers.HandleGetParentCategories(categoryService)).Methods("GET")
 	mux.Handle("/category/{categoryName}", handlers.HandleGetCategory(categoryService)).Methods("GET")

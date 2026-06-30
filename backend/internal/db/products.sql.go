@@ -63,6 +63,58 @@ func (q *Queries) CreateProduct(ctx context.Context, arg CreateProductParams) (P
 	return i, err
 }
 
+const getPrdouctsByCategoryTreee = `-- name: GetPrdouctsByCategoryTreee :many
+WITH RECURSIVE category_tree AS (
+    SELECT c.id, c.category_name, c.parent_id
+    FROM categories c
+    WHERE c.id = $1
+
+    UNION ALL
+
+    SELECT ct.id, ct.category_name, ct.parent_id
+    FROM categories
+    INNER JOIN category_tree ct ON c.parent_id = ct.id
+)
+SELECT p.id, p.product_name, p.product_description, p.brand, p.price, p.mode, p.attributes, p.category_id, p.subcategory_id, p.user_id, p.created_at, p.updated_at, p.images, p.is_deleted
+FROM products p
+INNER JOIN category_tree ct ON p.category_id = ct.id
+`
+
+func (q *Queries) GetPrdouctsByCategoryTreee(ctx context.Context, id int32) ([]Product, error) {
+	rows, err := q.db.Query(ctx, getPrdouctsByCategoryTreee, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Product
+	for rows.Next() {
+		var i Product
+		if err := rows.Scan(
+			&i.ID,
+			&i.ProductName,
+			&i.ProductDescription,
+			&i.Brand,
+			&i.Price,
+			&i.Mode,
+			&i.Attributes,
+			&i.CategoryID,
+			&i.SubcategoryID,
+			&i.UserID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.Images,
+			&i.IsDeleted,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getProductById = `-- name: GetProductById :one
 SELECT id, product_name, product_description, brand, price, mode, attributes, category_id, subcategory_id, user_id, created_at, updated_at, images, is_deleted FROM products
 WHERE id = $1 LIMIT 1
@@ -88,6 +140,45 @@ func (q *Queries) GetProductById(ctx context.Context, id int32) (Product, error)
 		&i.IsDeleted,
 	)
 	return i, err
+}
+
+const getProducts = `-- name: GetProducts :many
+SELECT id, product_name, product_description, brand, price, mode, attributes, category_id, subcategory_id, user_id, created_at, updated_at, images, is_deleted FROM products
+`
+
+func (q *Queries) GetProducts(ctx context.Context) ([]Product, error) {
+	rows, err := q.db.Query(ctx, getProducts)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Product
+	for rows.Next() {
+		var i Product
+		if err := rows.Scan(
+			&i.ID,
+			&i.ProductName,
+			&i.ProductDescription,
+			&i.Brand,
+			&i.Price,
+			&i.Mode,
+			&i.Attributes,
+			&i.CategoryID,
+			&i.SubcategoryID,
+			&i.UserID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.Images,
+			&i.IsDeleted,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const getProductsByCategory = `-- name: GetProductsByCategory :many

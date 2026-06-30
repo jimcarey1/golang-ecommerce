@@ -21,3 +21,11 @@ func (service *ProductService) CreateNewProduct(ctx context.Context, data db.Cre
 func (service *ProductService) GetProductById(ctx context.Context, id int) (db.Product, error){
 	return service.repo.GetProductById(ctx, int32(id))
 }
+
+func (service *ProductService) GetProductsByCategoryTree(ctx context.Context, categoryId int) ([]db.Product, error){
+	return service.repo.GetPrdouctsByCategoryTreee(ctx, int32(categoryId))
+}
+
+func (service *ProductService) GetProducts(ctx context.Context) ([]db.Product, error){
+	return service.repo.GetProducts(ctx)
+}
