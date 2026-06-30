@@ -1,4 +1,5 @@
 import { User, ShoppingCart, ArrowRight } from "lucide-react";
+import { Link } from "react-router-dom";
 import type { Item } from "../types.ts";
 import { useAuthContext } from "../context/AuthContext.tsx";
 
@@ -16,7 +17,10 @@ export default function ProductCard({ item, onBuyNow }: ProductCardProps) {
     <div className="group flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xs transition-all duration-200 hover:-translate-y-1 hover:border-gray-300 hover:shadow-md">
       
       {/* Product Image Stage */}
-      <div className="relative aspect-square w-full overflow-hidden bg-gray-100">
+      <Link
+        to={`/products/${item.id}`}
+        className="relative aspect-square w-full overflow-hidden bg-gray-100"
+      >
         <img
           src={item.imageUrl}
           alt={item.title}
@@ -36,14 +40,17 @@ export default function ProductCard({ item, onBuyNow }: ProductCardProps) {
             </span>
           </div>
         )}
-      </div>
+      </Link>
 
       {/* Item metadata description */}
       <div className="flex flex-1 flex-col p-4">
         <div className="flex-1">
-          <h3 className="line-clamp-2 text-sm font-semibold tracking-tight text-gray-900 group-hover:text-[#0064d2] min-h-[40px]">
+          <Link
+            to={`/products/${item.id}`}
+            className="line-clamp-2 min-h-[40px] text-sm font-semibold tracking-tight text-gray-900 group-hover:text-[#0064d2]"
+          >
             {item.title}
-          </h3>
+          </Link>
           <p className="mt-1 line-clamp-2 text-xs text-gray-500">
             {item.description}
           </p>

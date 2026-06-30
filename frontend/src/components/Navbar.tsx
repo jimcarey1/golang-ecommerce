@@ -1,28 +1,25 @@
-import { Layers, ShoppingBag, Tag, User, TrendingUp, Mail, LogOut, LogIn } from "lucide-react";
+import { Layers, ShoppingBag, Tag, User, TrendingUp,  LogOut, LogIn } from "lucide-react";
 import { Link, NavLink } from "react-router-dom";
-import type { User as UserType } from "../types.ts";
+import { useAuthContext } from "../context/AuthContext.tsx";
 
 interface NavbarProps {
-  currentUser: UserType | null;
   onLogout: () => void;
   onOpenAuth: () => void;
-  unreadNotifications: number;
   onNavigate?: () => void;
 }
 
 export default function Navbar({
-  currentUser,
   onLogout,
   onOpenAuth,
-  unreadNotifications,
   onNavigate,
 }: NavbarProps) {
+  const { user } = useAuthContext()
+
   const navItems = [
     { path: "/", label: "Marketplace", icon: ShoppingBag },
     { path: "/sell", label: "Sell Item", icon: Tag },
     { path: "/categories", label: "Categories", icon: Layers },
     { path: "/dashboard", label: "Sales Dashboard", icon: TrendingUp },
-    { path: "/inbox", label: "Inbox & Chats", icon: Mail, badge: unreadNotifications },
     { path: "/profile", label: "My Profile", icon: User },
   ];
 
@@ -64,12 +61,6 @@ export default function Navbar({
                 }`}
               >
                 <Icon className="h-4 w-4" />
-                <span>{tab.label}</span>
-                {tab.badge && tab.badge > 0 ? (
-                  <span className="absolute -top-1 -right-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white shadow-sm animate-pulse">
-                    {tab.badge}
-                  </span>
-                ) : null}
               </NavLink>
             );
           })}
@@ -77,7 +68,7 @@ export default function Navbar({
 
         {/* User Session Area */}
         <div className="flex items-center space-x-3">
-          {currentUser ? (
+          {user ? (
             <div className="flex items-center space-x-3">
               <Link
                 to="/profile"
@@ -85,7 +76,7 @@ export default function Navbar({
                 className="hidden lg:flex flex-col text-right cursor-pointer"
               >
                 <span className="text-xs font-semibold text-gray-400">Signed in as</span>
-                <span className="text-sm font-bold text-gray-800 hover:underline">{currentUser.fullName}</span>
+                <span className="text-sm font-bold text-gray-800 hover:underline">{user.FullName}</span>
               </Link>
               <button
                 onClick={onLogout}
@@ -123,11 +114,6 @@ export default function Navbar({
             >
               <Icon className="h-4 w-4" />
               <span>{tab.label.split(" ")[0]}</span>
-              {tab.badge && tab.badge > 0 ? (
-                <span className="absolute top-0 right-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-0.5 text-[8px] font-bold text-white">
-                  {tab.badge}
-                </span>
-              ) : null}
             </NavLink>
           );
         })}

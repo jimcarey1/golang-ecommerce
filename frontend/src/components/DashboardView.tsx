@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { TrendingUp, Package, Truck, MessageSquare, Bookmark, DollarSign, RefreshCw } from "lucide-react";
-import type { User as UserType, Item, Order } from "../types.ts";
+import type { Item, Order } from "../types.ts";
+import type { AuthUser as UserType } from "../services/auth.ts";
 
 interface DashboardViewProps {
   currentUser: UserType | null;
@@ -42,7 +43,7 @@ function AuthenticatedDashboardView({
   onSelectChatForOrder,
 }: AuthenticatedDashboardViewProps) {
   const user = currentUser;
-  const userId = Number(user.id);
+  const userId = user.ID;
 
   const [orders, setOrders] = useState<Order[]>([]);
   const [items, setItems] = useState<Item[]>([]);
@@ -58,14 +59,14 @@ function AuthenticatedDashboardView({
 
   useEffect(() => {
     fetchDashboardData();
-  }, [user.id]);
+  }, [user.ID]);
 
   async function fetchDashboardData() {
     setLoading(true);
     try {
       // 1. Get raw items
       const itemsRes = await fetch("/api/items", {
-        headers: { "Authorization": `Bearer ${user.id}` }
+        headers: { "Authorization": `Bearer ${user.ID}` }
       });
       if (itemsRes.ok) {
         const allItems: Item[] = await itemsRes.json();
@@ -76,7 +77,7 @@ function AuthenticatedDashboardView({
 
       // 2. Get incoming sales orders
       const salesRes = await fetch("/api/seller/orders", {
-        headers: { "Authorization": `Bearer ${user.id}` }
+        headers: { "Authorization": `Bearer ${user.ID}` }
       });
       if (salesRes.ok) {
         const salesData = await salesRes.json();
@@ -100,7 +101,7 @@ function AuthenticatedDashboardView({
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${user.id}`,
+          "Authorization": `Bearer ${user.ID}`,
         },
         body: JSON.stringify({
           status: statusVal,

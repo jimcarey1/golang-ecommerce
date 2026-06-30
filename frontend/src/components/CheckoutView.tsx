@@ -1,26 +1,28 @@
 import React, { useState } from "react";
 import { ShoppingBag, ArrowLeft, ShieldCheck, Mail, Phone, Lock, AlertCircle, RefreshCw, Key } from "lucide-react";
-import type { Item, Order, User as UserType } from "../types.ts";
+import type { Item, Order } from "../types.ts";
+import { useAuthContext } from "../context/AuthContext.tsx";
+import type { AuthUser } from "../services/auth.ts";
 
 interface CheckoutViewProps {
   item: Item;
-  currentUser: UserType | null;
   onCancel: () => void;
   onCompletePurchase: () => void;
 }
 
 export default function CheckoutView({
   item,
-  currentUser,
   onCancel,
   onCompletePurchase,
 }: CheckoutViewProps) {
-  if (!currentUser) return null;
-
+  const { user } = useAuthContext()
+  if(!user){
+    return null
+  }
   return (
     <AuthenticatedCheckoutView
       item={item}
-      currentUser={currentUser}
+      currentUser={user}
       onCancel={onCancel}
       onCompletePurchase={onCompletePurchase}
     />
@@ -28,7 +30,7 @@ export default function CheckoutView({
 }
 
 type AuthenticatedCheckoutViewProps = Omit<CheckoutViewProps, "currentUser"> & {
-  currentUser: UserType;
+  currentUser: AuthUser;
 };
 
 function AuthenticatedCheckoutView({
@@ -42,7 +44,7 @@ function AuthenticatedCheckoutView({
   // Local state variables for checkout processing states
   const [verifiedVia, setVerifiedVia] = useState<"email" | "phone">("email");
   const [verifiedContact, setVerifiedContact] = useState(
-    verifiedVia === "email" ? user.email : "91"
+    verifiedVia === "email" ? user.Email : "91"
   );
   const [submittingSetup, setSubmittingSetup] = useState(false);
   const [orderId, setOrderId] = useState<string | null>(null);
@@ -57,15 +59,15 @@ function AuthenticatedCheckoutView({
   const [purchaseSuccess, setPurchaseSuccess] = useState(false);
   const [receiptDetails, setReceiptDetails] = useState<Order | null>(null);
 
-  // Pre-condition checking inside UI
-  const hasAddress = user.address && user.address.trim().length > 5;
-  const hasPayment = user.paymentDetails && (user.paymentDetails.upiId || user.paymentDetails.cardNumber);
+  // Temporary Solution
+  const hasAddress = true
+  const hasPayment = true
 
   // Handle contact type toggle
   function handleToggleVia(type: "email" | "phone") {
     setVerifiedVia(type);
     if (type === "email") {
-      setVerifiedContact(user.email);
+      setVerifiedContact(user.Email);
     } else {
       setVerifiedContact("");
     }
@@ -82,7 +84,7 @@ function AuthenticatedCheckoutView({
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${user.id}`,
+          "Authorization": `Bearer ${user.ID}`,
         },
         body: JSON.stringify({
           itemId: item.id,
@@ -125,7 +127,7 @@ function AuthenticatedCheckoutView({
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${user.id}`,
+          "Authorization": `Bearer ${user.ID}`,
         },
         body: JSON.stringify({
           orderId,
@@ -207,7 +209,7 @@ function AuthenticatedCheckoutView({
           {/* User Dest Address confirmation summary */}
           <div className="bg-gray-50 p-3 rounded-lg border border-gray-150 space-y-2">
             <span className="block text-[10px] font-black uppercase text-gray-500 tracking-wider">Shipping Destination</span>
-            <p className="text-xs text-gray-700 leading-normal font-medium">{user.address || "No address added."}</p>
+            <p className="text-xs text-gray-700 leading-normal font-medium">{"No address added."}</p>
           </div>
 
           <div className="flex items-center gap-1.5 text-[10px] text-gray-500 justify-center">

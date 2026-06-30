@@ -14,8 +14,8 @@ import ProfilePage from "./pages/ProfilePage.tsx";
 import SellPage from "./pages/SellPage.tsx";
 import { useAuth } from "./hooks/useAuth.ts";
 import { useCatalog } from "./hooks/useCatalog.ts";
-import { useNotifications } from "./hooks/useNotifications.ts";
 import type { Item } from "./types.ts";
+import { useAuthContext } from "./context/AuthContext.tsx";
 
 const TAB_PATHS: Record<string, string> = {
   marketplace: "/",
@@ -34,20 +34,12 @@ export default function App() {
   const [selectedOrderIdForChat, setSelectedOrderIdForChat] = useState<string | null>(null);
   const [eligibilityWarning, setEligibilityWarning] = useState<string | null>(null);
 
-  const {
-    listings,
-    loadingCatalog,
-    fetchCatalog,
-  } = useCatalog();
+  const { listings, loadingCatalog, fetchCatalog } = useCatalog();
 
-  const {
-    currentUser,
-    authModal,
-    openAuthModal,
-    logout,
-  } = useAuth(fetchCatalog);
+  const { authModal, openAuthModal } = useAuth(fetchCatalog);
 
-  const { unreadCount } = useNotifications(currentUser);
+  const { user, logout } = useAuthContext()
+
 
   function handleLogout() {
     logout();
@@ -56,17 +48,15 @@ export default function App() {
   }
 
   function triggerBuyCheckout(item: Item) {
-    if (!currentUser) {
+    if (!user) {
       authModal.setIsSignUpMode(false);
       authModal.setShowAuthModal(true);
       return;
     }
 
-    const hasAddress = currentUser.address && currentUser.address.trim().length > 5;
-    const hasBilling =
-      currentUser.paymentDetails &&
-      ((currentUser.paymentDetails.upiId && currentUser.paymentDetails.upiId.trim().length > 4) ||
-        (currentUser.paymentDetails.cardNumber && currentUser.paymentDetails.cardNumber.trim().length >= 10));
+    //Temporary Solution.
+    const hasAddress = true
+    const hasBilling = true
 
     if (!hasAddress || !hasBilling) {
       setEligibilityWarning(
@@ -92,10 +82,8 @@ export default function App() {
   return (
     <div className="min-h-screen bg-[#f7f7f7] font-sans antialiased text-gray-800 flex flex-col">
       <Navbar
-        currentUser={currentUser}
         onLogout={handleLogout}
         onOpenAuth={openAuthModal}
-        unreadNotifications={unreadCount}
         onNavigate={() => setCheckoutItem(null)}
       />
 
@@ -159,7 +147,7 @@ export default function App() {
             path="/dashboard"
             element={(
               <DashboardView
-                currentUser={currentUser}
+                currentUser={user}
                 onSwitchTab={handleSwitchTab}
                 onSelectChatForOrder={handleSelectChatForOrder}
               />
@@ -170,7 +158,6 @@ export default function App() {
             path="/inbox"
             element={(
               <CommunicationView
-                currentUser={currentUser}
                 selectedOrderId={selectedOrderIdForChat}
                 onClearSelectedOrder={() => setSelectedOrderIdForChat(null)}
               />
@@ -183,7 +170,6 @@ export default function App() {
               checkoutItem ? (
                 <CheckoutView
                   item={checkoutItem}
-                  currentUser={currentUser}
                   onCancel={() => {
                     setCheckoutItem(null);
                     navigate("/");

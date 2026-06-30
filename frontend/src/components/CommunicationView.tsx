@@ -1,23 +1,24 @@
 import React, { useState, useEffect } from "react";
 import { Mail, MessageSquare, Send, RefreshCw, Calendar } from "lucide-react";
-import type { User as UserType, Notification, Order, BuyerSellerMessage } from "../types.ts";
+import type { Notification, Order, BuyerSellerMessage } from "../types.ts";
+import type { AuthUser as UserType } from "../services/auth.ts";
+import { useAuthContext } from "../context/AuthContext.tsx";
 
 interface CommunicationViewProps {
-  currentUser: UserType | null;
   selectedOrderId: string | null;
   onClearSelectedOrder: () => void;
 }
 
 export default function CommunicationView({
-  currentUser,
   selectedOrderId,
   onClearSelectedOrder,
 }: CommunicationViewProps) {
-  if (!currentUser) return null;
+  const { user } = useAuthContext()
+  if (!user) return null;
 
   return (
     <AuthenticatedCommunicationView
-      currentUser={currentUser}
+      currentUser={user}
       selectedOrderId={selectedOrderId}
       onClearSelectedOrder={onClearSelectedOrder}
     />
@@ -34,7 +35,7 @@ function AuthenticatedCommunicationView({
   onClearSelectedOrder,
 }: AuthenticatedCommunicationViewProps) {
   const user = currentUser;
-  const userId = Number(user.id);
+  const userId = user.ID;
 
   const [activeSegment, setActiveSegment] = useState<"inbox" | "chats">("inbox");
   
@@ -52,7 +53,7 @@ function AuthenticatedCommunicationView({
   useEffect(() => {
     fetchNotifications();
     fetchChatOrders();
-  }, [user.id]);
+  }, [user.ID]);
 
   useEffect(() => {
     if (activeChatOrderId) {
@@ -74,7 +75,7 @@ function AuthenticatedCommunicationView({
     setLoadingNotifs(true);
     try {
       const res = await fetch("/api/notifications", {
-        headers: { "Authorization": `Bearer ${user.id}` }
+        headers: { "Authorization": `Bearer ${user.ID}` }
       });
       if (res.ok) {
         const data = await res.json();
@@ -94,7 +95,7 @@ function AuthenticatedCommunicationView({
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${user.id}`,
+          "Authorization": `Bearer ${user.ID}`,
         }
       });
       if (res.ok) {
@@ -111,14 +112,14 @@ function AuthenticatedCommunicationView({
     try {
       // Get purchases
       const pRes = await fetch("/api/buyer/orders", {
-        headers: { "Authorization": `Bearer ${user.id}` }
+        headers: { "Authorization": `Bearer ${user.ID}` }
       });
       let purchases: Order[] = [];
       if (pRes.ok) purchases = await pRes.json();
 
       // Get sales
       const sRes = await fetch("/api/seller/orders", {
-        headers: { "Authorization": `Bearer ${user.id}` }
+        headers: { "Authorization": `Bearer ${user.ID}` }
       });
       let sales: Order[] = [];
       if (sRes.ok) sales = await sRes.json();
@@ -141,7 +142,7 @@ function AuthenticatedCommunicationView({
     setLoadingMessages(true);
     try {
       const res = await fetch(`/api/communications/order/${orderId}`, {
-        headers: { "Authorization": `Bearer ${user.id}` }
+        headers: { "Authorization": `Bearer ${user.ID}` }
       });
       if (res.ok) {
         const msgList = await res.json();
@@ -164,7 +165,7 @@ function AuthenticatedCommunicationView({
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${user.id}`,
+          "Authorization": `Bearer ${user.ID}`,
         },
         body: JSON.stringify({
           orderId: activeChatOrderId,
@@ -387,7 +388,7 @@ function AuthenticatedCommunicationView({
                     </div>
                   ) : (
                     messages.map((m) => {
-                      const isMe = m.senderId === user.id;
+                      const isMe = m.senderId === String(user.ID);
                       const isSystem = m.senderId === "system_robot";
 
                       if (isSystem) {

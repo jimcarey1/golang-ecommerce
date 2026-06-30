@@ -28,3 +28,13 @@ export async function getProductById(productId: number) {
     console.log(response.data)
     return response.data
 }
+
+export async function getProductsByCategorySubtree(categoryId: number) {
+    const response = await api.get<Product[]>(`/products/category/${categoryId}`)
+    return response.data
+}
+
+export async function getProducts(){
+    const response = await api.get<Product[]>(`/products`)
+    return response.data
+}
